@@ -1,0 +1,7 @@
+echo "# ai-social-isolation" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/sunra724/ai-social-isolation.git
+git push -u origin main
