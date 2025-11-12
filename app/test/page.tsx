@@ -3,43 +3,49 @@ import { useState } from 'react';
 import { LSNS6_ITEMS, scoreLSNS6 } from '@/lib/lsns6';
 import { useRouter } from 'next/navigation';
 
-export default function TestPage(){
+export default function TestPage() {
   const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [submitting, setSubmitting] = useState(false);
+  const [sending, setSending] = useState(false);
   const router = useRouter();
 
-  const submit = async ()=>{
+  const submit = async () => {
     const { total, dimensions } = scoreLSNS6(answers);
-    setSubmitting(true);
-    await fetch('/api/submit', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ module:'lsns6', total, dimensions, answers })
-    }).catch(()=>{});
+    setSending(true);
+    try {
+      await fetch('/api/submit', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ module:'lsns6', total, dimensions, answers }),
+      });
+    } catch {}
     sessionStorage.setItem('lsns6_result', JSON.stringify({ total, dimensions }));
     router.push('/result');
   };
 
   return (
-    <main className="p-6 max-w-xl mx-auto">
-      <h2 className="text-xl font-semibold mb-4">사회적 고립 자가진단</h2>
-      <ol className="space-y-4">
+    <main style={{maxWidth: 720, margin: '0 auto', padding: 24}}>
+      <h1 style={{fontSize: 24, fontWeight: 700, marginBottom: 12}}>
+        청년 사회적고립 자가진단
+      </h1>
+      <p style={{color:'#666', marginBottom: 16}}>
+        본 도구는 참고용이며 의료적 진단이 아닙니다. 개인 식별정보는 수집하지 않습니다.
+      </p>
+      <ol style={{display:'grid', gap:16}}>
         {LSNS6_ITEMS.map(it=>(
           <li key={it.id}>
-            <p className="mb-2">{it.text}</p>
+            <div style={{marginBottom:8}}>{it.text}</div>
             <input type="range" min={it.min} max={it.max}
               value={answers[it.id] ?? 0}
-              onChange={e=>setAnswers(a=>({...a, [it.id]: Number(e.target.value)}))}
-              className="w-full" />
-            <div className="text-sm text-gray-600">선택값: {answers[it.id] ?? 0}</div>
+              onChange={e => setAnswers(a=>({...a, [it.id]: Number(e.target.value)}))}
+              style={{width:'100%'}}/>
+            <div style={{fontSize:12, color:'#666'}}>선택값: {answers[it.id] ?? 0}</div>
           </li>
         ))}
       </ol>
-      <button disabled={submitting} onClick={submit}
-        className="mt-6 px-4 py-2 rounded bg-black text-white">
-        {submitting ? '제출 중…' : '결과 보기'}
+      <button onClick={submit} disabled={sending}
+        style={{marginTop:20, padding:'10px 16px', borderRadius:8, background:'#111', color:'#fff'}}>
+        {sending ? '제출 중…' : '결과 보기'}
       </button>
     </main>
   );
 }
-
